@@ -11,7 +11,21 @@ app.use(express.json());
 app.use("/customer",session({secret:"fingerprint_customer",resave: true, saveUninitialized: true}))
 
 app.use("/customer/auth/*", function auth(req,res,next){
-//Write the authenication mechanism here
+    if (req.session.authorization){
+        token=req.session.authorization['accessToken'];
+      jwt.verify(token,"fingerprint_customer",(error,usr)=>{
+        if (!error){
+            req.user=usr;
+            next();
+        }
+        else{
+            res.status(403).json({message:"forbidden to access"});
+        }
+        });
+    }
+    else{
+        res.status(403).json({message:"unauthenticated user."})
+    }
 });
  
 const PORT =5000;
